@@ -1,16 +1,16 @@
 
-#SOURCES= *.go \
-#		 api/*.go \
-#		 business/*.go \
-#		 cmd/*.go \
-#		 database/*.go \
-#		 frontend/*.go \
-#		 models/*.go
+SOURCES=$(shell find . -not -path "./cmd/*" -type f -name "*.go")
 
-SOURCES=$(shell find . -type f -name "*.go")
+all: bin/server bin/generate
 
-bin/server: bin/ $(SOURCES)
-	go build -o bin/server cmd/server.go
+bin/server: cmd/server.go bin/ $(SOURCES)
+	go build -o bin/server $<
+
+bin/generate: cmd/generate.go bin/ $(SOURCES)
+	go build -o bin/server $<
 
 bin/:
 	mkdir -p bin
+
+clean:
+	rm -rf bin/
