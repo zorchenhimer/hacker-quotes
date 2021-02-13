@@ -1,4 +1,4 @@
-package business
+package hacker
 
 import (
 	"github.com/zorchenhimer/hacker-quotes/models"

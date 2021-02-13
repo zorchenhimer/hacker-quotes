@@ -8,19 +8,19 @@ import (
 
 	//"github.com/zorchenhimer/hacker-quotes/models"
 	//"github.com/zorchenhimer/hacker-quotes/database"
-	"github.com/zorchenhimer/hacker-quotes/business"
+	"github.com/zorchenhimer/hacker-quotes"
 )
 
 type Frontend struct {
 	//db database.DB
-	bs business.HackerQuotes
+	hq hacker.HackerQuotes
 	//cookies *sessions.CookieStore
 	templates map[string]*template.Template
 }
 
-func New(bs business.HackerQuotes) (*Frontend, error) {
+func New(hq hacker.HackerQuotes) (*Frontend, error) {
 	f := &Frontend{
-		bs: bs,
+		hq: hq,
 		//cookies: sessions.NewCookieStore([]byte("some auth key"), []byte("some encrypt key")),
 	}
 	return f, nil

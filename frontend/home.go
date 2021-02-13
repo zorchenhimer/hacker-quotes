@@ -5,7 +5,7 @@ import (
 )
 
 func (f *Frontend) home(w http.ResponseWriter, r *http.Request) {
-	words, err := f.bs.Random()
+	words, err := f.hq.Random()
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		return

@@ -4,7 +4,7 @@ import (
 	"os"
 	"fmt"
 
-	"github.com/zorchenhimer/hacker-quotes/business"
+	"github.com/zorchenhimer/hacker-quotes"
 	"github.com/zorchenhimer/hacker-quotes/database"
 )
 
@@ -22,7 +22,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	hq, err := business.NewGeneric(db)
+	hq, err := hacker.NewGeneric(db)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
