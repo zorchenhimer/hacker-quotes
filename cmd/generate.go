@@ -35,7 +35,7 @@ func main() {
 	}
 
 	if count == 1 {
-		sentence, err := hq.Random()
+		sentence, err := hq.Hack()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -45,7 +45,7 @@ func main() {
 	} else {
 		fmt.Println("")
 		for i := 0; i < count; i++ {
-			sentence, err := hq.Random()
+			sentence, err := hq.Hack()
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)

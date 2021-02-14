@@ -6,8 +6,8 @@ import (
 )
 
 type HackerQuotes interface {
-	// Random returns a completely randomized quote.
-	Random() (string, error)
+	// Hack returns a completely randomized quote.
+	Hack() (string, error)
 
 	// Format returns a quote in the given format.
 	Format(format string) (string, error)

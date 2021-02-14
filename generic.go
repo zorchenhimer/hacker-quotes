@@ -19,7 +19,7 @@ func NewGeneric(db database.DB) (HackerQuotes, error) {
 	return &generic{db: db}, nil
 }
 
-func (g *generic) Random() (string, error) {
+func (g *generic) Hack() (string, error) {
 	definite := rand.Int() % 2 == 0
 	hasAdj := rand.Int() % 2 == 0
 	plural := rand.Int() % 2 == 0
