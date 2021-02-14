@@ -3,14 +3,11 @@ SOURCES=$(shell find . -not -path "./cmd/*" -type f -name "*.go")
 
 all: bin/server bin/generate
 
-bin/server: cmd/server.go bin/ $(SOURCES)
-	go build -o bin/server $<
+bin/server: cmd/server.go $(SOURCES)
+	go build -o $@ $<
 
-bin/generate: cmd/generate.go bin/ $(SOURCES)
-	go build -o bin/server $<
-
-bin/:
-	mkdir -p bin
+bin/generate: cmd/generate.go $(SOURCES)
+	go build -o $@ $<
 
 clean:
 	rm -rf bin/
