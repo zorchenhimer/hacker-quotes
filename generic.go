@@ -34,6 +34,23 @@ func (g *generic) Random() (string, error) {
 	sb := strings.Builder{}
 	sb.WriteString(np)
 
+	ctime := models.CM_Present
+	ctype := models.CT_I
+	invert := false	// TODO: implement this
+
+	if plural {
+		ctype = models.CT_They
+	}
+
+	v, err := g.randomVerb(ctype, ctime, invert)
+	if err != nil {
+		return "", err
+	}
+
+	sb.WriteString(" ")
+	sb.WriteString(v)
+	sb.WriteString(" ")
+
 	return sb.String(), nil
 }
 
@@ -121,7 +138,7 @@ func (g *generic) randomNoun(plural bool) (string, error) {
 	return noun.Word, nil
 }
 
-func (g *generic) randomVerb() (string, error) {
+func (g *generic) randomVerb(ctype models.ConjugationType, ctime models.ConjugationTime, invert bool) (string, error) {
 	ids, err := g.db.GetVerbIds()
 	if err != nil {
 		return "", fmt.Errorf("[verb] get IDs error: %v", err)
@@ -137,7 +154,7 @@ func (g *generic) randomVerb() (string, error) {
 		return "", fmt.Errorf("[verb] ID: %d; %v", ids[rid], err)
 	}
 
-	return verb.Word, nil
+	return verb.Conjugate(ctype, ctime, invert), nil
 }
 
 func (g *generic) InitData(filename string) error {
