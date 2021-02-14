@@ -32,7 +32,7 @@ func (g *generic) Hack() (string, error) {
 	//fmt.Printf("(%s) definite: %t; hasAdj: %t; plural: %t\n", np, definite, hasAdj, plural)
 
 	sb := strings.Builder{}
-	sb.WriteString(np)
+	sb.WriteString(toCap(np))
 
 	ctime := models.CM_Present
 	ctype := models.CT_I
@@ -255,4 +255,8 @@ func ana(phrase string) string {
 	}
 
 	return "a " + phrase
+}
+
+func toCap(words string) string {
+	return strings.ToUpper(string(words[0])) + words[1:]
 }
