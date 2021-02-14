@@ -27,7 +27,7 @@ type DB interface {
 	RemoveVerb(id int) error
 
 	GetAdjectiveIds() ([]int, error)
-	GetNounIds() ([]int, error)
+	GetNounIds(begin, end, alone bool) ([]int, error)
 	GetVerbIds() ([]int, error)
 
 	GetAdjective(id int) (*models.Adjective, error)

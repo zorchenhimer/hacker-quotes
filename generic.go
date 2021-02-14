@@ -23,8 +23,9 @@ func (g *generic) Hack() (string, error) {
 	definite := rand.Int() % 2 == 0
 	hasAdj := rand.Int() % 2 == 0
 	plural := rand.Int() % 2 == 0
+	compound := rand.Int() % 2 == 0
 
-	np, err := g.nounPhrase(definite, hasAdj, plural)
+	np, err := g.nounPhrase(definite, hasAdj, plural, compound)
 	if err != nil {
 		return "", err
 	}
@@ -35,7 +36,7 @@ func (g *generic) Hack() (string, error) {
 	sb.WriteString(toCap(np))
 
 	ctime := models.CM_Present
-	ctype := models.CT_I
+	ctype := models.CT_It
 	invert := false	// TODO: implement this
 
 	if plural {
@@ -49,7 +50,28 @@ func (g *generic) Hack() (string, error) {
 
 	sb.WriteString(" ")
 	sb.WriteString(v)
+
+	definite = rand.Int() % 2 == 0
+	hasAdj = rand.Int() % 2 == 0
+	plural = rand.Int() % 2 == 0
+
+	np2, err := g.nounPhrase(definite, hasAdj, plural, false)
+	if err != nil {
+		return "", err
+	}
+
 	sb.WriteString(" ")
+	sb.WriteString(np2)
+	sb.WriteString(". With ")
+
+	plural = rand.Int() % 2 == 0
+
+	np3, err := g.nounPhrase(false, false, plural, true)
+	if err != nil {
+		return "", err
+	}
+	sb.WriteString(np3)
+	sb.WriteString("!")
 
 	return sb.String(), nil
 }
@@ -58,7 +80,7 @@ func (g *generic) Format(format string) (string, error) {
 	return "", fmt.Errorf("Not implemented")
 }
 
-func (g *generic) nounPhrase(definite, hasAdj, plural bool) (string, error){
+func (g *generic) nounPhrase(definite, hasAdj, plural, compound bool) (string, error){
 	adj := ""
 	var err error
 	if hasAdj {
@@ -68,7 +90,7 @@ func (g *generic) nounPhrase(definite, hasAdj, plural bool) (string, error){
 		}
 	}
 
-	noun, err := g.randomNoun(plural)
+	noun, err := g.randomNoun(plural, compound)
 	if err != nil {
 		return "", err
 	}
@@ -114,10 +136,19 @@ func (g *generic) randomAdjective() (string, error) {
 	return adj.Word, nil
 }
 
-func (g *generic) randomNoun(plural bool) (string, error) {
-	ids, err := g.db.GetNounIds()
-	if err != nil {
-		return "", fmt.Errorf("[noun] get IDs error: %v", err)
+func (g *generic) randomNoun(plural, compound bool) (string, error) {
+	var ids []int
+	var err error
+	if compound {
+		ids, err = g.db.GetNounIds(true, true, true)
+		if err != nil {
+			return "", fmt.Errorf("[noun] get IDs error: %v", err)
+		}
+	} else {
+		ids, err = g.db.GetNounIds(true, false, false)
+		if err != nil {
+			return "", fmt.Errorf("[noun] get IDs error: %v", err)
+		}
 	}
 
 	if len(ids) <= 0 {

@@ -157,8 +157,14 @@ func (s *sqliteDb) RemoveVerb(id int) error {
 	return s.removeWord("delete from verbs where id = ?", id)
 }
 
-func (s *sqliteDb) readIds(query string) ([]int, error) {
-	rows, err := s.db.Query("select id from adjectives")
+func (s *sqliteDb) readIds(query string, args ...interface{}) ([]int, error) {
+	stmt, err := s.db.Prepare(query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(args...)
 	if err != nil {
 		return nil, err
 	}
@@ -180,8 +186,8 @@ func (s *sqliteDb) GetAdjectiveIds() ([]int, error) {
 	return s.readIds("select id from adjectives")
 }
 
-func (s *sqliteDb) GetNounIds() ([]int, error) {
-	return s.readIds("select id from nouns")
+func (s *sqliteDb) GetNounIds(begin, end, alone bool) ([]int, error) {
+	return s.readIds("select id from nouns where begin = ? or end = ? or alone = ?", begin, end, alone)
 }
 
 func (s *sqliteDb) GetVerbIds() ([]int, error) {
