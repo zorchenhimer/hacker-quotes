@@ -20,6 +20,106 @@ func NewGeneric(db database.DB) (HackerQuotes, error) {
 }
 
 func (g *generic) Hack() (string, error) {
+	sb := strings.Builder{}
+
+	invert := rand.Int() % 2 == 0
+	plural := rand.Int() % 2 == 0
+
+	pn, err := g.randomPronoun(plural)
+	if err != nil {
+		return "", err
+	}
+
+	sb.WriteString(pn)
+	sb.WriteString(" can't ")
+
+	v, err := g.randomVerb(models.CT_I, models.CM_Present, invert)
+	if err != nil {
+		return "", err
+	}
+
+	sb.WriteString(v)
+	sb.WriteString(" ")
+
+	definite := rand.Int() % 2 == 0
+	hasAdj := rand.Int() % 2 == 0
+	plural = rand.Int() % 2 == 0
+	compound := rand.Int() % 2 == 0
+
+	np, err := g.nounPhrase(definite, hasAdj, plural, compound)
+	if err != nil {
+		return "", err
+	}
+
+	sb.WriteString(np)
+	sb.WriteString(", it ")
+
+	v2, err := g.randomVerb(models.CT_It, models.CM_Future, invert)
+	if err != nil {
+		return "", err
+	}
+
+	sb.WriteString(v2)
+	sb.WriteString(" ")
+
+	np2, err := g.nounPhrase(definite, hasAdj, plural, compound)
+	if err != nil {
+		return "", err
+	}
+
+	sb.WriteString(np2)
+	sb.WriteString("!")
+
+	return toCap(sb.String()), nil
+}
+
+func (g *generic) Hack_t1() (string, error) {
+	sb := strings.Builder{}
+	invert := false
+
+	v, err := g.randomVerb(models.CT_You, models.CM_Present, invert)
+	if err != nil {
+		return "", err
+	}
+
+	sb.WriteString(toCap(v))
+	sb.WriteString(" ")
+
+	hasAdj := rand.Int() % 2 == 0
+	plural := rand.Int() % 2 == 0
+	compound := rand.Int() % 2 == 0
+
+	np, err := g.nounPhrase(true, hasAdj, plural, compound)
+	if err != nil {
+		return "", err
+	}
+
+	sb.WriteString(np)
+	sb.WriteString(", then you can ")
+
+	v2, err := g.randomVerb(models.CT_You, models.CM_Present, invert)
+	if err != nil {
+		return "", err
+	}
+
+	sb.WriteString(v2)
+	sb.WriteString(" ")
+
+	hasAdj = rand.Int() % 2 == 0
+	plural = rand.Int() % 2 == 0
+	compound = rand.Int() % 2 == 0
+
+	np2, err := g.nounPhrase(true, hasAdj, plural, compound)
+	if err != nil {
+		return "", err
+	}
+	sb.WriteString(np2)
+	sb.WriteString("!")
+
+	return sb.String(), err
+}
+
+func (g *generic) Hack_t0() (string, error) {
 	definite := rand.Int() % 2 == 0
 	hasAdj := rand.Int() % 2 == 0
 	plural := rand.Int() % 2 == 0
@@ -188,6 +288,25 @@ func (g *generic) randomVerb(ctype models.ConjugationType, ctime models.Conjugat
 	return verb.Conjugate(ctype, ctime, invert), nil
 }
 
+func (g *generic) randomPronoun(plural bool) (string, error) {
+	ids, err := g.db.GetPronounIds(plural)
+	if err != nil {
+		return "", fmt.Errorf("[pronoun] get IDs error: %v", err)
+	}
+
+	if len(ids) <= 0 {
+		return "", fmt.Errorf("No pronoun IDs returned from database")
+	}
+
+	rid := int(rand.Int63n(int64(len(ids))))
+	pronoun, err := g.db.GetPronoun(ids[rid])
+	if err != nil {
+		return "", fmt.Errorf("[pronoun] ID: %d; %v", ids[rid], err)
+	}
+
+	return pronoun.Word, nil
+}
+
 func (g *generic) InitData(filename string) error {
 	fmt.Printf("Initializing database with data in %q\n", filename)
 	if g.db == nil {
@@ -275,7 +394,21 @@ func (g *generic) InitData(filename string) error {
 		verbs = append(verbs, v)
 	}
 
-	return g.db.InitData(adjectives, nouns, verbs, nil)
+	rawpronouns, ok := data["pronouns"]
+	if !ok {
+		return fmt.Errorf("Missing pronouns key in data")
+	}
+
+	pronouns := []models.Pronoun{}
+	for _, word := range rawpronouns {
+		p := models.Pronoun{Word: word[1]}
+		if strings.Contains(word[0], "p") {
+			p.Plural = true
+		}
+		pronouns = append(pronouns, p)
+	}
+
+	return g.db.InitData(adjectives, nouns, verbs, pronouns, nil)
 }
 
 // Prepend "a", "an" or nothing to a phrase

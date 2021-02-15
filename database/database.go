@@ -21,20 +21,24 @@ type DB interface {
 	AddAdjective(word models.Adjective) error
 	AddNoun(word models.Noun) error
 	AddVerb(word models.Verb) error
+	//AddPronoun(word models.Verb) error
 
 	RemoveAdjective(id int) error
 	RemoveNoun(id int) error
 	RemoveVerb(id int) error
+	//RemovePronoun(id int) error
 
 	GetAdjectiveIds() ([]int, error)
 	GetNounIds(begin, end, alone bool) ([]int, error)
 	GetVerbIds() ([]int, error)
+	GetPronounIds(plural bool) ([]int, error)
 
 	GetAdjective(id int) (*models.Adjective, error)
 	GetNoun(id int) (*models.Noun, error)
 	GetVerb(id int) (*models.Verb, error)
+	GetPronoun(id int) (*models.Pronoun, error)
 
-	InitData([]models.Adjective, []models.Noun, []models.Verb, []string) error
+	InitData([]models.Adjective, []models.Noun, []models.Verb, []models.Pronoun, []string) error
 	IsNew() bool
 	Close()
 }

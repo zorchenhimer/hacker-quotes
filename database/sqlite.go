@@ -37,6 +37,7 @@ func sqliteInit(connectionString string) (DB, error) {
 		create table Adjectives (id integer not null primary key, absolute bool, appendMore bool, appendEst bool, word text);
 		create table Nouns (id integer not null primary key, multiple bool, begin bool, end bool, alone bool, regular bool, word text);
 		create table Verbs (id integer not null primary key, regular bool, word text);
+		create table Pronouns (id integer not null primary key, plural bool, word text);
 		`
 		//create table Sentences (id integer not null primary key, sentence text)
 
@@ -194,6 +195,10 @@ func (s *sqliteDb) GetVerbIds() ([]int, error) {
 	return s.readIds("select id from verbs")
 }
 
+func (s *sqliteDb) GetPronounIds(plural bool) ([]int, error) {
+	return s.readIds("select id from pronouns where plural = ?", plural)
+}
+
 func (s *sqliteDb) GetAdjective(id int) (*models.Adjective, error) {
 	stmt, err := s.db.Prepare("select Id, Absolute, AppendMore, AppendEst, Word from Adjectives where id = ?")
 	if err != nil {
@@ -239,7 +244,22 @@ func (s *sqliteDb) GetVerb(id int) (*models.Verb, error) {
 	return verb, nil
 }
 
-func (s *sqliteDb) InitData(adjectives []models.Adjective, nouns []models.Noun, verbs []models.Verb, sentences []string) error {
+func (s *sqliteDb) GetPronoun(id int) (*models.Pronoun, error) {
+	stmt, err := s.db.Prepare("select Id, Plural, Word from Pronouns where id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	pn := &models.Pronoun{}
+	if err = stmt.QueryRow(id).Scan(&pn.Id, &pn.Plural, &pn.Word); err != nil {
+		return nil, err
+	}
+
+	return pn, nil
+}
+
+func (s *sqliteDb) InitData(adjectives []models.Adjective, nouns []models.Noun, verbs []models.Verb, pronouns []models.Pronoun, sentences []string) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -297,6 +317,28 @@ func (s *sqliteDb) InitData(adjectives []models.Adjective, nouns []models.Noun, 
 		}
 	}
 	vstmt.Close()
+
+	if pronouns == nil || len(pronouns) == 0 {
+		tx.Rollback()
+		return fmt.Errorf("[init] no pronouns to insert")
+	}
+	pstmt_txt := "insert into pronouns (Plural, Word) values (?, ?)"
+	fmt.Println(pstmt_txt)
+
+	pstmt, err := tx.Prepare(pstmt_txt)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	for _, pronoun := range pronouns {
+		_, err := pstmt.Exec(pronoun.Plural, pronoun.Word)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	pstmt.Close()
 
 	//sstmt, err := tx.Prepare("insert into sentences (Sentence) values (?)")
 	//if err != nil {

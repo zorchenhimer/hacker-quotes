@@ -401,5 +401,17 @@
         ["r", "alter"],
         ["r", "mute"],
         ["r", "hash"]
+    ],
+
+    "pronouns": [
+        ["s", "he"],
+        ["s", "she"],
+        ["s", "it"],
+        ["s", "you"],
+        ["p", "you"],
+        ["s", "they"],
+        ["p", "they"],
+        ["s", "i"],
+        ["p", "we"]
     ]
 }
