@@ -62,6 +62,11 @@ func (g *generic) Hack() (string, error) {
 	sb.WriteString(v2)
 	sb.WriteString(" ")
 
+	definite = rand.Int() % 2 == 0
+	hasAdj = rand.Int() % 2 == 0
+	plural = rand.Int() % 2 == 0
+	compound = rand.Int() % 2 == 0
+
 	np2, err := g.nounPhrase(definite, hasAdj, plural, compound)
 	if err != nil {
 		return "", err
