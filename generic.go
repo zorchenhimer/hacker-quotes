@@ -19,6 +19,18 @@ func NewGeneric(db database.DB) (HackerQuotes, error) {
 	return &generic{db: db}, nil
 }
 
+/*
+
+	Sentence format
+
+	{word_type:options}
+	{{word_type:new word:properties}}
+
+	{pronoun} can't {verb:i,present} {noun_phrase}, it {verb:it,future} {noun_phrase}!
+	{verb:you,present} {noun_phrase:definite}, than you can {verb:you,present} {noun_phrase:definite}!
+	{noun_phrase} {verb}. With {noun_phrase:indifinite,noadj,compound}!
+*/
+
 func (g *generic) Hack() (string, error) {
 	sb := strings.Builder{}
 
@@ -134,8 +146,6 @@ func (g *generic) Hack_t0() (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	//fmt.Printf("(%s) definite: %t; hasAdj: %t; plural: %t\n", np, definite, hasAdj, plural)
 
 	sb := strings.Builder{}
 	sb.WriteString(toCap(np))
