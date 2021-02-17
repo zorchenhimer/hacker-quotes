@@ -413,5 +413,11 @@
         ["p", "they"],
         ["s", "i"],
         ["p", "we"]
+    ],
+
+    "sentences": [
+        "{pronoun} can't {verb:i,present} {noun_phrase}, it {verb:it,future} {noun_phrase}!",
+        "{verb:you,present} {noun_phrase:definite}, then you can {verb:you,present} {noun_phrase:definite}!",
+        "{noun_phrase:it,past} {verb}. With {noun_phrase:indifinite,noadj,compound}!"
     ]
 }

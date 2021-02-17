@@ -15,9 +15,6 @@ const (
 )
 
 type DB interface {
-	// Sentence returns a format string for a sentence with the given ID.
-	//Sentence(id int) (string, error)
-
 	AddAdjective(word models.Adjective) error
 	AddNoun(word models.Noun) error
 	AddVerb(word models.Verb) error
@@ -32,11 +29,13 @@ type DB interface {
 	GetNounIds(begin, end, alone bool) ([]int, error)
 	GetVerbIds() ([]int, error)
 	GetPronounIds(plural bool) ([]int, error)
+	GetSentenceIds() ([]int, error)
 
 	GetAdjective(id int) (*models.Adjective, error)
 	GetNoun(id int) (*models.Noun, error)
 	GetVerb(id int) (*models.Verb, error)
 	GetPronoun(id int) (*models.Pronoun, error)
+	GetSentence(id int) (string, error)
 
 	InitData([]models.Adjective, []models.Noun, []models.Verb, []models.Pronoun, []string) error
 	IsNew() bool

@@ -10,7 +10,7 @@ type HackerQuotes interface {
 	Hack() (string, error)
 
 	// Format returns a quote in the given format.
-	Format(format string) (string, error)
+	HackThis(format string) (string, error)
 
 	// InitData populates the underlying database with data from the given json file.
 	InitData(filename string) error

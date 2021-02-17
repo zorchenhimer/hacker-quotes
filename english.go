@@ -11,6 +11,14 @@ import (
 	"github.com/zorchenhimer/hacker-quotes/models"
 )
 
+type InitialData struct {
+	Adjectives [][]string
+	Nouns [][]string
+	Verbs [][]string
+	Pronouns [][]string
+	Sentences []string
+}
+
 type english struct {
 	db database.DB
 }
@@ -27,172 +35,199 @@ func NewEnglish(db database.DB) (HackerQuotes, error) {
 	{{word_type:new word:properties}}
 
 	{pronoun} can't {verb:i,present} {noun_phrase}, it {verb:it,future} {noun_phrase}!
-	{verb:you,present} {noun_phrase:definite}, than you can {verb:you,present} {noun_phrase:definite}!
+	{verb:you,present} {noun_phrase:definite}, then you can {verb:you,present} {noun_phrase:definite}!
 	{noun_phrase} {verb}. With {noun_phrase:indifinite,noadj,compound}!
 */
 
 func (g *english) Hack() (string, error) {
-	sb := strings.Builder{}
-
-	invert := rand.Int() % 2 == 0
-	plural := rand.Int() % 2 == 0
-
-	pn, err := g.randomPronoun(plural)
+	//var fmtString string = `{verb:you,present} {noun_phrase:definite} then you can {verb:you,present} {noun_phrase:definite}!`
+	str, err := g.randomSentence()
 	if err != nil {
 		return "", err
 	}
 
-	sb.WriteString(pn)
-	sb.WriteString(" can't ")
-
-	v, err := g.randomVerb(models.CT_I, models.CM_Present, invert)
-	if err != nil {
-		return "", err
-	}
-
-	sb.WriteString(v)
-	sb.WriteString(" ")
-
-	definite := rand.Int() % 2 == 0
-	hasAdj := rand.Int() % 2 == 0
-	plural = rand.Int() % 2 == 0
-	compound := rand.Int() % 2 == 0
-
-	np, err := g.nounPhrase(definite, hasAdj, plural, compound)
-	if err != nil {
-		return "", err
-	}
-
-	sb.WriteString(np)
-	sb.WriteString(", it ")
-
-	v2, err := g.randomVerb(models.CT_It, models.CM_Future, invert)
-	if err != nil {
-		return "", err
-	}
-
-	sb.WriteString(v2)
-	sb.WriteString(" ")
-
-	definite = rand.Int() % 2 == 0
-	hasAdj = rand.Int() % 2 == 0
-	plural = rand.Int() % 2 == 0
-	compound = rand.Int() % 2 == 0
-
-	np2, err := g.nounPhrase(definite, hasAdj, plural, compound)
-	if err != nil {
-		return "", err
-	}
-
-	sb.WriteString(np2)
-	sb.WriteString("!")
-
-	return toCap(sb.String()), nil
+	return g.HackThis(str)
 }
 
-func (g *english) Hack_t1() (string, error) {
-	sb := strings.Builder{}
-	invert := false
+func (g *english) HackThis(fmtString string) (string, error) {
+	var idx int
+	var err error
+	var nidx int
+	output := &strings.Builder{}
 
-	v, err := g.randomVerb(models.CT_You, models.CM_Present, invert)
-	if err != nil {
-		return "", err
+	for idx < len(fmtString) {
+		if fmtString[idx] == '{' {
+			if fmtString[idx+1] == '{' {
+				nidx, err = g.consumeNewWord(fmtString, idx, output)
+				if err != nil {
+					return "", err
+				}
+				idx = nidx
+				continue
+			}
+
+			nidx, err = g.consumeWord(fmtString, idx, output)
+			if err != nil {
+				return "", err
+			}
+			idx = nidx
+			continue
+		}
+
+		nidx, err = g.consumeRaw(fmtString, idx, output)
+		if err != nil {
+			return "", err
+		}
+		idx = nidx
 	}
 
-	sb.WriteString(toCap(v))
-	sb.WriteString(" ")
-
-	hasAdj := rand.Int() % 2 == 0
-	plural := rand.Int() % 2 == 0
-	compound := rand.Int() % 2 == 0
-
-	np, err := g.nounPhrase(true, hasAdj, plural, compound)
-	if err != nil {
-		return "", err
-	}
-
-	sb.WriteString(np)
-	sb.WriteString(", then you can ")
-
-	v2, err := g.randomVerb(models.CT_You, models.CM_Present, invert)
-	if err != nil {
-		return "", err
-	}
-
-	sb.WriteString(v2)
-	sb.WriteString(" ")
-
-	hasAdj = rand.Int() % 2 == 0
-	plural = rand.Int() % 2 == 0
-	compound = rand.Int() % 2 == 0
-
-	np2, err := g.nounPhrase(true, hasAdj, plural, compound)
-	if err != nil {
-		return "", err
-	}
-	sb.WriteString(np2)
-	sb.WriteString("!")
-
-	return sb.String(), err
+	return toCap(output.String()), nil
 }
 
-func (g *english) Hack_t0() (string, error) {
-	definite := rand.Int() % 2 == 0
-	hasAdj := rand.Int() % 2 == 0
-	plural := rand.Int() % 2 == 0
-	compound := rand.Int() % 2 == 0
-
-	np, err := g.nounPhrase(definite, hasAdj, plural, compound)
-	if err != nil {
-		return "", err
+func (g *english) consumeRaw(fmtString string, idx int, output *strings.Builder) (int, error) {
+	end := strings.Index(fmtString[idx:], "{")
+	if end == -1 {
+		output.WriteString(fmtString[idx:len(fmtString)])
+		return len(fmtString), nil
 	}
 
-	sb := strings.Builder{}
-	sb.WriteString(toCap(np))
-
-	ctime := models.CM_Present
-	ctype := models.CT_It
-	invert := false	// TODO: implement this
-
-	if plural {
-		ctype = models.CT_They
-	}
-
-	v, err := g.randomVerb(ctype, ctime, invert)
-	if err != nil {
-		return "", err
-	}
-
-	sb.WriteString(" ")
-	sb.WriteString(v)
-
-	definite = rand.Int() % 2 == 0
-	hasAdj = rand.Int() % 2 == 0
-	plural = rand.Int() % 2 == 0
-
-	np2, err := g.nounPhrase(definite, hasAdj, plural, false)
-	if err != nil {
-		return "", err
-	}
-
-	sb.WriteString(" ")
-	sb.WriteString(np2)
-	sb.WriteString(". With ")
-
-	plural = rand.Int() % 2 == 0
-
-	np3, err := g.nounPhrase(false, false, plural, true)
-	if err != nil {
-		return "", err
-	}
-	sb.WriteString(np3)
-	sb.WriteString("!")
-
-	return sb.String(), nil
+	output.WriteString(fmtString[idx:end+idx])
+	return idx+end, nil
 }
 
-func (g *english) Format(format string) (string, error) {
-	return "", fmt.Errorf("Not implemented")
+func (g *english) consumeNewWord(fmtString string, idx int, output *strings.Builder) (int, error) {
+	return 0, fmt.Errorf("not implemented")
+}
+
+func (g *english) consumeWord(fmtString string, idx int, output *strings.Builder) (int, error) {
+	idx++
+	var wordtype string
+	var options string
+
+	end := strings.Index(fmtString[idx:], "}")
+	if end == -1 {
+		return 0, fmt.Errorf("[consumeWord] Unclosed definition starting at %d", idx)
+	}
+
+	end += idx
+	optsStart := strings.Index(fmtString[idx:end], ":")
+
+	if optsStart != -1 {
+		options = fmtString[optsStart+idx+1:end]
+		wordtype = fmtString[idx:optsStart+idx]
+	} else {
+		wordtype = fmtString[idx:end]
+	}
+
+	if wordtype == "" {
+		return 0, fmt.Errorf("[consumeWord] Missing word type at idx: %d", idx)
+	}
+
+	opts := strings.Split(options, ",")
+	var word string
+	var err error
+
+	switch wordtype {
+	case "pronoun":
+		var plural bool
+		if sliceContains(opts, "plural") {
+			plural = true
+		}
+
+		word, err = g.randomPronoun(plural)
+		if err != nil {
+			return 0, err
+		}
+
+	case "verb":
+		var ct models.ConjugationType = models.CT_I
+		if sliceContains(opts, "i") {
+			ct = models.CT_I
+		} else if sliceContains(opts, "you") {
+			ct = models.CT_You
+		} else if sliceContains(opts, "it") {
+			ct = models.CT_It
+		} else if sliceContains(opts, "we") {
+			ct = models.CT_We
+		} else if sliceContains(opts, "they") {
+			ct = models.CT_They
+		}
+
+		var cm models.ConjugationTime = models.CM_Present
+		if sliceContains(opts, "present") {
+			cm = models.CM_Present
+		} else if sliceContains(opts, "past") {
+			cm = models.CM_Past
+		} else if sliceContains(opts, "future") {
+			cm = models.CM_Future
+		}
+
+		var invert bool = false
+		if sliceContains(opts, "invert") {
+			invert = true
+		}
+
+		word, err = g.randomVerb(ct, cm, invert)
+		if err != nil {
+			return 0, err
+		}
+
+	case "noun":
+		var plural bool
+		var compound bool
+
+		if sliceContains(opts, "plural") {
+			plural = true
+		}
+
+		if sliceContains(opts, "compound") {
+			compound = true
+		}
+
+		word, err = g.randomNoun(plural, compound)
+		if err != nil {
+			return 0, err
+		}
+
+	case "noun_phrase":
+		var definite bool = true
+		var hasAdj bool = true
+		var plural bool = false
+		var compound bool = false
+
+		if sliceContains(opts, "indefinite") {
+			definite = false
+		}
+
+		if sliceContains(opts, "noadj") {
+			hasAdj = false
+		}
+
+		if sliceContains(opts, "plural") {
+			plural = true
+		}
+
+		if sliceContains(opts, "compound") {
+			compound = true
+		}
+
+		word, err = g.nounPhrase(definite, hasAdj, plural, compound)
+		if err != nil {
+			return 0, err
+		}
+
+	case "adjective":
+		word, err = g.randomAdjective()
+		if err != nil {
+			return 0, err
+		}
+
+	default:
+		return 0, fmt.Errorf("[consumeWord] Invalid word type %s at %d", wordtype, idx)
+	}
+
+	output.WriteString(word)
+	return end+1, nil
 }
 
 func (g *english) nounPhrase(definite, hasAdj, plural, compound bool) (string, error){
@@ -224,7 +259,7 @@ func (g *english) nounPhrase(definite, hasAdj, plural, compound bool) (string, e
 
 	if !plural {
 		//fmt.Println("[nounPhrase] !plural")
-		return ana(phrase), nil
+		return g.ana(phrase), nil
 	}
 
 	return phrase, nil
@@ -322,6 +357,25 @@ func (g *english) randomPronoun(plural bool) (string, error) {
 	return pronoun.Word, nil
 }
 
+func (g *english) randomSentence() (string, error) {
+	ids, err := g.db.GetSentenceIds()
+	if err != nil {
+		return "", fmt.Errorf("[sentence] get IDs error: %v", err)
+	}
+
+	if len(ids) <= 0 {
+		return "", fmt.Errorf("[sentence] No sentence IDs returned from database")
+	}
+
+	rid := int(rand.Int63n(int64(len(ids))))
+	sentence, err := g.db.GetSentence(ids[rid])
+	if err != nil {
+		return "", fmt.Errorf("[sentence] ID: %d, %v", ids[rid], err)
+	}
+
+	return sentence, nil
+}
+
 func (g *english) InitData(filename string) error {
 	fmt.Printf("Initializing database with data in %q\n", filename)
 	if g.db == nil {
@@ -333,19 +387,18 @@ func (g *english) InitData(filename string) error {
 		return err
 	}
 
-	data := map[string][][]string{}
+	//data := map[string][]interface{}{}
+	data := InitialData{}
 	if err = json.Unmarshal(raw, &data); err != nil {
 		return err
 	}
 
-	rawadj, ok := data["adjectives"]
-	if !ok {
-		return fmt.Errorf("Missing adjectives key in data")
+	if data.Adjectives == nil || len(data.Adjectives) == 0 {
+		return fmt.Errorf("Missing Adjectives in input data")
 	}
 
-
 	adjectives := []models.Adjective{}
-	for _, adj := range rawadj {
+	for _, adj := range data.Adjectives {
 		t, word := adj[0], adj[1]
 		a := models.Adjective{Word: word}
 		if strings.Contains(t, "a") {
@@ -361,13 +414,12 @@ func (g *english) InitData(filename string) error {
 		adjectives = append(adjectives, a)
 	}
 
-	rawnoun, ok := data["nouns"]
-	if !ok {
+	if data.Nouns == nil || len(data.Nouns) == 0 {
 		return fmt.Errorf("Missing nouns key in data")
 	}
 
 	nouns := []models.Noun{}
-	for _, noun := range rawnoun {
+	for _, noun := range data.Nouns {
 		t, word := noun[0], noun[1]
 		n := models.Noun{Word: word}
 
@@ -394,40 +446,42 @@ func (g *english) InitData(filename string) error {
 		nouns = append(nouns, n)
 	}
 
-	rawverbs, ok := data["verbs"]
-	if !ok {
+	if data.Verbs == nil || len(data.Verbs) == 0 {
 		return fmt.Errorf("Missing verbs key in data")
 	}
 
 	verbs := []models.Verb{}
-	for _, word := range rawverbs {
-		v := models.Verb{Word: word[1]}
-		if strings.Contains(word[0], "r") {
+	for _, verb := range data.Verbs {
+		v := models.Verb{Word: verb[1]}
+		if strings.Contains(verb[0], "r") {
 			v.Regular = true
 		}
 
 		verbs = append(verbs, v)
 	}
 
-	rawpronouns, ok := data["pronouns"]
-	if !ok {
+	if data.Pronouns == nil || len(data.Pronouns) == 0 {
 		return fmt.Errorf("Missing pronouns key in data")
 	}
 
 	pronouns := []models.Pronoun{}
-	for _, word := range rawpronouns {
-		p := models.Pronoun{Word: word[1]}
-		if strings.Contains(word[0], "p") {
+	for _, pro := range data.Pronouns {
+		p := models.Pronoun{Word: pro[1]}
+		if strings.Contains(pro[0], "p") {
 			p.Plural = true
 		}
 		pronouns = append(pronouns, p)
 	}
 
-	return g.db.InitData(adjectives, nouns, verbs, pronouns, nil)
+	if data.Sentences == nil || len(data.Sentences) == 0 {
+		return fmt.Errorf("Missing sentences key in data")
+	}
+
+	return g.db.InitData(adjectives, nouns, verbs, pronouns, data.Sentences)
 }
 
 // Prepend "a", "an" or nothing to a phrase
-func ana(phrase string) string {
+func (g *english) ana(phrase string) string {
 	//fmt.Printf("[ana] phrase[0]: %s; %q\n", string(phrase[0]), phrase)
 	if strings.ContainsAny(string(phrase[0]), "aeiou") {
 		return "an " + phrase
@@ -436,6 +490,37 @@ func ana(phrase string) string {
 	return "a " + phrase
 }
 
+// toCap capitalizes the first word of each sentence in the input string.
 func toCap(words string) string {
-	return strings.ToUpper(string(words[0])) + words[1:]
+	ret :=  strings.ToUpper(string(words[0])) + words[1:]
+
+	next := strings.Index(words, ". ")
+	if next == -1 {
+		return ret
+	}
+
+	for next+3 < len(words) {
+		newnext := strings.Index(words[next+1:], ". ")
+		ret = ret[0:next+2] + strings.ToUpper(string(ret[next+2])) + ret[next+3:]
+
+		if newnext == -1 {
+			break
+		}
+		next = newnext + next+1
+	}
+
+	return ret
+}
+
+func sliceContains(haystack []string, needle string) bool {
+	if len(haystack) == 0 {
+		return false
+	}
+
+	for _, item := range haystack {
+		if item == needle {
+			return true
+		}
+	}
+	return false
 }

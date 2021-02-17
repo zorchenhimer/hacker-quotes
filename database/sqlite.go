@@ -38,8 +38,8 @@ func sqliteInit(connectionString string) (DB, error) {
 		create table Nouns (id integer not null primary key, multiple bool, begin bool, end bool, alone bool, regular bool, word text);
 		create table Verbs (id integer not null primary key, regular bool, word text);
 		create table Pronouns (id integer not null primary key, plural bool, word text);
+		create table Sentences (id integer not null primary key, sentence text);
 		`
-		//create table Sentences (id integer not null primary key, sentence text)
 
 		if _, err := db.Exec(stmt); err != nil {
 			fmt.Println("[sqlite], DB table creation error:", err)
@@ -64,21 +64,6 @@ func (s *sqliteDb) prep(query string) (*sql.Tx, *sql.Stmt, error) {
 	}
 
 	return tx, stmt, nil
-}
-
-func (s *sqliteDb) Sentence(id int) (string, error) {
-	stmt, err := s.db.Prepare("select from sentences where id = ?")
-	if err != nil {
-		return "", err
-	}
-	defer stmt.Close()
-
-	var sentence string
-	if err = stmt.QueryRow(id).Scan(&sentence); err != nil {
-		return "", err
-	}
-
-	return sentence, nil
 }
 
 func (s *sqliteDb) AddAdjective(word models.Adjective) error {
@@ -199,6 +184,10 @@ func (s *sqliteDb) GetPronounIds(plural bool) ([]int, error) {
 	return s.readIds("select id from pronouns where plural = ?", plural)
 }
 
+func (s *sqliteDb) GetSentenceIds() ([]int, error) {
+	return s.readIds("select id from sentences")
+}
+
 func (s *sqliteDb) GetAdjective(id int) (*models.Adjective, error) {
 	stmt, err := s.db.Prepare("select Id, Absolute, AppendMore, AppendEst, Word from Adjectives where id = ?")
 	if err != nil {
@@ -257,6 +246,21 @@ func (s *sqliteDb) GetPronoun(id int) (*models.Pronoun, error) {
 	}
 
 	return pn, nil
+}
+
+func (s *sqliteDb) GetSentence(id int) (string, error) {
+	stmt, err := s.db.Prepare("select sentence from sentences where id = ?")
+	if err != nil {
+		return "", err
+	}
+	defer stmt.Close()
+
+	var sentence string
+	if err = stmt.QueryRow(id).Scan(&sentence); err != nil {
+		return "", err
+	}
+
+	return sentence, nil
 }
 
 func (s *sqliteDb) InitData(adjectives []models.Adjective, nouns []models.Noun, verbs []models.Verb, pronouns []models.Pronoun, sentences []string) error {
@@ -340,20 +344,23 @@ func (s *sqliteDb) InitData(adjectives []models.Adjective, nouns []models.Noun, 
 	}
 	pstmt.Close()
 
-	//sstmt, err := tx.Prepare("insert into sentences (Sentence) values (?)")
-	//if err != nil {
-	//	tx.Rollback()
-	//	return err
-	//}
+	sstmt_text := "insert into sentences (Sentence) values (?)"
+	fmt.Println(sstmt_text)
 
-	//for _, sentence := range sentences {
-	//	_, err = sstmt.Exec(sentence)
-	//	if err != nil {
-	//		tx.Rollback()
-	//		return err
-	//	}
-	//}
-	//sstmt.Close()
+	sstmt, err := tx.Prepare(sstmt_text)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	for _, sentence := range sentences {
+		_, err = sstmt.Exec(sentence)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	sstmt.Close()
 
 	err = tx.Commit()
 	if err != nil {

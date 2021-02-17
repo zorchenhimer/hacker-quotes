@@ -25,7 +25,8 @@ type Verb struct {
 
 type ConjugationType int
 const (
-	CT_I ConjugationType = iota
+	CT_Unknown ConjugationType = iota
+	CT_I
 	CT_You
 	CT_It
 	CT_We
@@ -51,7 +52,8 @@ func (ct ConjugationType) String() string {
 
 type ConjugationTime int
 const (
-	CM_Present ConjugationTime = iota
+	CM_Unknown ConjugationTime = iota
+	CM_Present
 	CM_Past
 	CM_Future
 )
