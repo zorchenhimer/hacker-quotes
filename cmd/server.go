@@ -25,7 +25,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	hack, err := hacker.NewGeneric(db)
+	hack, err := hacker.NewEnglish(db)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

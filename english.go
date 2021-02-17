@@ -11,12 +11,12 @@ import (
 	"github.com/zorchenhimer/hacker-quotes/models"
 )
 
-type generic struct {
+type english struct {
 	db database.DB
 }
 
-func NewGeneric(db database.DB) (HackerQuotes, error) {
-	return &generic{db: db}, nil
+func NewEnglish(db database.DB) (HackerQuotes, error) {
+	return &english{db: db}, nil
 }
 
 /*
@@ -31,7 +31,7 @@ func NewGeneric(db database.DB) (HackerQuotes, error) {
 	{noun_phrase} {verb}. With {noun_phrase:indifinite,noadj,compound}!
 */
 
-func (g *generic) Hack() (string, error) {
+func (g *english) Hack() (string, error) {
 	sb := strings.Builder{}
 
 	invert := rand.Int() % 2 == 0
@@ -90,7 +90,7 @@ func (g *generic) Hack() (string, error) {
 	return toCap(sb.String()), nil
 }
 
-func (g *generic) Hack_t1() (string, error) {
+func (g *english) Hack_t1() (string, error) {
 	sb := strings.Builder{}
 	invert := false
 
@@ -136,7 +136,7 @@ func (g *generic) Hack_t1() (string, error) {
 	return sb.String(), err
 }
 
-func (g *generic) Hack_t0() (string, error) {
+func (g *english) Hack_t0() (string, error) {
 	definite := rand.Int() % 2 == 0
 	hasAdj := rand.Int() % 2 == 0
 	plural := rand.Int() % 2 == 0
@@ -191,11 +191,11 @@ func (g *generic) Hack_t0() (string, error) {
 	return sb.String(), nil
 }
 
-func (g *generic) Format(format string) (string, error) {
+func (g *english) Format(format string) (string, error) {
 	return "", fmt.Errorf("Not implemented")
 }
 
-func (g *generic) nounPhrase(definite, hasAdj, plural, compound bool) (string, error){
+func (g *english) nounPhrase(definite, hasAdj, plural, compound bool) (string, error){
 	adj := ""
 	var err error
 	if hasAdj {
@@ -230,7 +230,7 @@ func (g *generic) nounPhrase(definite, hasAdj, plural, compound bool) (string, e
 	return phrase, nil
 }
 
-func (g *generic) randomAdjective() (string, error) {
+func (g *english) randomAdjective() (string, error) {
 	ids, err := g.db.GetAdjectiveIds()
 	if err != nil {
 		return "", fmt.Errorf("[adj] get IDs error: %v", err)
@@ -251,7 +251,7 @@ func (g *generic) randomAdjective() (string, error) {
 	return adj.Word, nil
 }
 
-func (g *generic) randomNoun(plural, compound bool) (string, error) {
+func (g *english) randomNoun(plural, compound bool) (string, error) {
 	var ids []int
 	var err error
 	if compound {
@@ -284,7 +284,7 @@ func (g *generic) randomNoun(plural, compound bool) (string, error) {
 	return noun.Word, nil
 }
 
-func (g *generic) randomVerb(ctype models.ConjugationType, ctime models.ConjugationTime, invert bool) (string, error) {
+func (g *english) randomVerb(ctype models.ConjugationType, ctime models.ConjugationTime, invert bool) (string, error) {
 	ids, err := g.db.GetVerbIds()
 	if err != nil {
 		return "", fmt.Errorf("[verb] get IDs error: %v", err)
@@ -303,7 +303,7 @@ func (g *generic) randomVerb(ctype models.ConjugationType, ctime models.Conjugat
 	return verb.Conjugate(ctype, ctime, invert), nil
 }
 
-func (g *generic) randomPronoun(plural bool) (string, error) {
+func (g *english) randomPronoun(plural bool) (string, error) {
 	ids, err := g.db.GetPronounIds(plural)
 	if err != nil {
 		return "", fmt.Errorf("[pronoun] get IDs error: %v", err)
@@ -322,7 +322,7 @@ func (g *generic) randomPronoun(plural bool) (string, error) {
 	return pronoun.Word, nil
 }
 
-func (g *generic) InitData(filename string) error {
+func (g *english) InitData(filename string) error {
 	fmt.Printf("Initializing database with data in %q\n", filename)
 	if g.db == nil {
 		return fmt.Errorf("databse is nil!")

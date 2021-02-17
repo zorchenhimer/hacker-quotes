@@ -22,7 +22,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	hq, err := hacker.NewGeneric(db)
+	hq, err := hacker.NewEnglish(db)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
