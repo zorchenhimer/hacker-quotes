@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -19,6 +20,11 @@ type Noun struct {
 }
 
 func (n Noun) Plural() string {
+	if !n.Regular {
+		fmt.Println("[noun] Irregular nouns not implemented")
+		return n.Word
+	}
+
 	suffixes := []string{
 		"s",
 		"x",
