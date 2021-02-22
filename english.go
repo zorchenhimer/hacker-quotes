@@ -162,9 +162,9 @@ func (g *english) parseNounOptions(optlist []string) (bool, bool) {
 
 	var compound bool = rand.Int() % 2 == 0
 	if sliceContains(optlist, "compound") {
-		plural = true
+		compound = true
 	} else if sliceContains(optlist, "simple") {
-		plural = false
+		compound = false
 	}
 
 	return plural, compound
