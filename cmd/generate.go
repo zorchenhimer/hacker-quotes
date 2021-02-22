@@ -1,20 +1,21 @@
 package main
 
 import (
-	"os"
+	"flag"
 	"fmt"
+	"os"
 
 	"github.com/zorchenhimer/hacker-quotes"
 	"github.com/zorchenhimer/hacker-quotes/database"
 )
 
 func main() {
-	fmt.Println("len(os.Args):", len(os.Args))
+	var count int
+	var format string
 
-	var count int = 1
-	if len(os.Args) == 2 {
-		fmt.Sscanf(os.Args[1], "%d", &count)
-	}
+	flag.IntVar(&count, "c", 1, "Number of sentences to generate")
+	flag.StringVar(&format, "f", "", "Custom format to use when generating sentences")
+	flag.Parse()
 
 	db, err := database.New("sqlite", "file:db.sqlite?mode=memory")
 	if err != nil {
@@ -34,23 +35,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	if count == 1 {
-		sentence, err := hq.Hack()
+	fmt.Println("")
+	for i := 0; i < count; i++ {
+		var sentence string
+		var err error
+
+		if format != "" {
+			sentence, err = hq.HackThis(format)
+		} else {
+			sentence, err = hq.Hack()
+		}
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
-		fmt.Println("\n>>", sentence, "<<\n")
-	} else {
-		fmt.Println("")
-		for i := 0; i < count; i++ {
-			sentence, err := hq.Hack()
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			fmt.Println(">>", sentence, "<<")
-		}
+		fmt.Println(">>", sentence, "<<")
 	}
 }
