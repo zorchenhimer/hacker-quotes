@@ -464,6 +464,9 @@ func (g *english) randomPronoun(plural bool) (string, error) {
 		return "", fmt.Errorf("[pronoun] ID: %d; %v", ids[rid], err)
 	}
 
+	if pronoun.Word == "i" {
+		return strings.ToUpper(pronoun.Word), nil
+	}
 	return pronoun.Word, nil
 }
 
