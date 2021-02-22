@@ -272,9 +272,11 @@ func (g *english) consumeWord(fmtString string, idx int, output *strings.Builder
 
 	switch wordtype {
 	case "pronoun":
-		var plural bool
+		var plural bool = rand.Int() % 2 == 0
 		if sliceContains(opts, "plural") {
 			plural = true
+		} else if sliceContains(opts, "singular")
+			plural = false
 		}
 
 		word, err = g.randomPronoun(plural)
@@ -300,25 +302,33 @@ func (g *english) consumeWord(fmtString string, idx int, output *strings.Builder
 		}
 
 	case "noun_phrase":
-		var definite bool = true
-		var hasAdj bool = true
-		var plural bool = false
-		var compound bool = false
+		var definite bool = rand.Int() % 2 == 0
+		var hasAdj bool = rand.Int() % 2 == 0
+		var plural bool = rand.Int() % 2 == 0
+		var compound bool = rand.Int() % 2 == 0
 
 		if sliceContains(opts, "indefinite") {
 			definite = false
+		} else if sliceContains(opts, "definite") {
+			definite = true
 		}
 
 		if sliceContains(opts, "noadj") {
 			hasAdj = false
+		} else if sliceContains(opts, "adj") {
+			hasAdj = true
 		}
 
 		if sliceContains(opts, "plural") {
 			plural = true
+		} else if sliceContains(opts, "singular") {
+			plural = false
 		}
 
 		if sliceContains(opts, "compound") {
 			compound = true
+		} else if sliceContains(opts, "simple") {
+			compound = false
 		}
 
 		word, err = g.nounPhrase(definite, hasAdj, plural, compound)
