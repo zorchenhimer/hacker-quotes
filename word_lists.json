@@ -419,6 +419,7 @@
         "{pronoun} can't {verb:i,present} {noun_phrase}, it {verb:it,future} {noun_phrase}!",
         "{verb:you,present} {noun_phrase:definite}, then you can {verb:you,present} {noun_phrase:definite}!",
         "{noun_phrase:it,past} {verb}. With {noun_phrase:indifinite,noadj,compound}!",
-        "{pronoun} {{verb:need:from_pronoun,present}} to {verb:i,present} {noun_phrase:definite}!"
+        "{pronoun} {{verb:need:from_pronoun,present}} to {verb:i,present} {noun_phrase:definite}!",
+        "{pronoun} [rng:can,may] {verb:i,present} {noun_phrase} [hide:{noun_phrase:singlular}], it {verb:it,future} {noun_phrase:definite}."
     ]
 }

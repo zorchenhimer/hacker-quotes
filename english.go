@@ -30,22 +30,31 @@ func NewEnglish(db database.DB) (HackerQuotes, error) {
 }
 
 /*
-
 	Sentence format
 
+	bare words
 	{word_type:options}
 	{{word_type:new word:properties}}
+
+	[rng:random,choice,list]		// one word is chosen from the comma-separated list
+
+	// Randomly hide/show the enclosed definition
+	[hide:{word_type:options}]
+	[hide:{{word_type:new word:options}}]
 
 	{pronoun} can't {verb:i,present} {noun_phrase}, it {verb:it,future} {noun_phrase}!
 	{verb:you,present} {noun_phrase:indefinite}, then you can {verb:you,present} {noun_phrase:definite}!
 	{noun_phrase} {verb}. With {noun_phrase:indifinite,noadj,compound}!
 
 	{pronoun} {{verb:need:from_pronoun,present}} to {verb:i,present} {noun_phrase:definite}!
+
+	{pronoun} [rng:can,may] {verb:i,present} {noun_phrase} [hide:{noun_phrase:singlular}], it {verb:it,future} {noun_phrase:definite}.
 */
 
 func (g *english) Hack() (string, error) {
 	//var fmtString string = `{verb:you,present} {noun_phrase:definite} then you can {verb:you,present} {noun_phrase:definite}!`
 	//var str string = `{pronoun} {{verb:need:from_pronoun,present}} to {verb:i,present} {noun_phrase:definite}!`
+	//var str string = `{pronoun} [rng:can,may] {verb:i,present} {noun_phrase}[hide: {noun_phrase:singlular}], it {verb:it,future} {noun_phrase:definite}.`
 	str, err := g.randomSentence()
 	if err != nil {
 		return "", err
@@ -63,16 +72,15 @@ func (g *english) HackThis(fmtString string) (string, error) {
 
 	for idx < len(fmtString) {
 		if fmtString[idx] == '{' {
-			if fmtString[idx+1] == '{' {
-				nidx, err = g.consumeNewWord(fmtString, idx, output)
-				if err != nil {
-					return "", err
-				}
-				idx = nidx
-				continue
-			}
-
 			nidx, err = g.consumeWord(fmtString, idx, output)
+			if err != nil {
+				return "", err
+			}
+			idx = nidx
+			continue
+
+		} else if fmtString[idx] == '[' {
+			nidx, err = g.consumeRng(fmtString, idx, output)
 			if err != nil {
 				return "", err
 			}
@@ -90,8 +98,57 @@ func (g *english) HackThis(fmtString string) (string, error) {
 	return toCap(output.String()), nil
 }
 
+func (g *english) consumeRng(fmtString string, idx int, output *strings.Builder) (int, error) {
+	idx++
+	def := strings.Index(fmtString[idx:], ":")
+	if def == -1 {
+		return 0, fmt.Errorf("Missing command separator in RNG block")
+	}
+	def += idx
+
+	end := strings.Index(fmtString[idx:], "]")
+	if end == -1 {
+		return 0, fmt.Errorf("Unclosed RNG block starting at offset %d", idx-1)
+	}
+	end += idx
+
+	if def > end {
+		return 0, fmt.Errorf("Missing command separator in RNG block")
+	}
+
+	switch fmtString[idx:def] {
+	case "rng":
+		choices := strings.Split(fmtString[def+1:end], ",")
+		ridx := rand.Intn(len(choices))
+		output.WriteString(choices[ridx])
+
+	case "hide":
+		if rand.Int() % 2 == 0 {
+			return end+1, nil
+		}
+
+		var newEnd int = def+1
+		var err error
+		for newEnd < end {
+			if fmtString[newEnd] == '{' {
+				newEnd, err = g.consumeWord(fmtString, newEnd, output)
+				if err != nil {
+					return 0, err
+				}
+			} else {
+				newEnd, err = g.consumeRaw(fmtString, newEnd, output)
+			}
+		}
+
+	default:
+		return 0, fmt.Errorf("RNG type %q is not implemented", fmtString[idx:def])
+	}
+
+	return end+1, nil
+}
+
 func (g *english) consumeRaw(fmtString string, idx int, output *strings.Builder) (int, error) {
-	end := strings.Index(fmtString[idx:], "{")
+	end := strings.IndexAny(fmtString[idx:], "{[")
 	if end == -1 {
 		output.WriteString(fmtString[idx:len(fmtString)])
 		return len(fmtString), nil
@@ -243,6 +300,10 @@ func (g *english) consumeNewWord(fmtString string, idx int, output *strings.Buil
 }
 
 func (g *english) consumeWord(fmtString string, idx int, output *strings.Builder) (int, error) {
+	if fmtString[idx+1] == '{' {
+		return g.consumeNewWord(fmtString, idx, output)
+	}
+
 	idx++
 	var wordtype string
 	var options string
@@ -275,7 +336,7 @@ func (g *english) consumeWord(fmtString string, idx int, output *strings.Builder
 		var plural bool = rand.Int() % 2 == 0
 		if sliceContains(opts, "plural") {
 			plural = true
-		} else if sliceContains(opts, "singular")
+		} else if sliceContains(opts, "singular") {
 			plural = false
 		}
 
