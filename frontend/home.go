@@ -8,7 +8,8 @@ import (
 func (f *Frontend) home(w http.ResponseWriter, r *http.Request) {
 	words, err := f.hq.Hack()
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		http.Error(w, "Something went worng :C", http.StatusInternalServerError)
+		fmt.Println(err)
 		return
 	}
 
