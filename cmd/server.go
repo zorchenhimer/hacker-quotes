@@ -1,27 +1,41 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"net/http"
+	"os"
 
 	"github.com/zorchenhimer/hacker-quotes"
 	"github.com/zorchenhimer/hacker-quotes/database"
 	"github.com/zorchenhimer/hacker-quotes/frontend"
 )
 
+//go:embed settings_default.json
+var defaultSettings []byte
+
 func main() {
-	settings, err := loadSettings("settings.json")
+	var s *settings
+	var err error
+
+	if fileExists("settings.json") {
+		fmt.Println("settings.json found")
+		s, err = loadSettings("settings.json")
+	} else {
+		fmt.Println("settings.json not found.  Using default values.")
+		s, err = loadRawSettings(defaultSettings)
+	}
+
 	if err != nil {
 		fmt.Printf("Unable to load settings: %s\n", err)
 		os.Exit(1)
 	}
 
-	db, err := database.New(settings.DatabaseType, settings.ConnectionString)
+	db, err := database.New(s.DatabaseType, s.ConnectionString)
 	if err != nil {
-		fmt.Printf("Unable to load database type %s: %s\n", settings.DatabaseType, err)
+		fmt.Printf("Unable to load database type %s: %s\n", s.DatabaseType, err)
 		os.Exit(1)
 	}
 
@@ -41,7 +55,6 @@ func main() {
 	} else {
 		fmt.Println("database isn't new")
 	}
-
 
 	web, err := frontend.New(hack)
 	if err != nil {
@@ -70,6 +83,15 @@ type settings struct {
 	HttpAddr string
 }
 
+func loadRawSettings(raw []byte) (*settings, error) {
+	s := &settings{}
+	if err := json.Unmarshal(raw, s); err != nil {
+		return nil, fmt.Errorf("Error unmarshaling: %s", err)
+	}
+
+	return s, nil
+}
+
 func loadSettings(filename string) (*settings, error) {
 	if !fileExists(filename) {
 		return nil, fmt.Errorf("%q doesn't exist", filename)
@@ -83,12 +105,7 @@ func loadSettings(filename string) (*settings, error) {
 		return nil, fmt.Errorf("Error reading file: %s", err)
 	}
 
-	s := &settings{}
-	if err = json.Unmarshal(raw, s); err != nil {
-		return nil, fmt.Errorf("Error unmarshaling: %s", err)
-	}
-
-	return s, nil
+	return loadRawSettings(raw)
 }
 
 // fileExists returns whether the given file or directory exists or not.

@@ -1,0 +1,5 @@
+{
+    "DatabaseType": "sqlite",
+    "ConnectionString": "database.sqlite",
+    "HttpAddr": ":8080"
+}
