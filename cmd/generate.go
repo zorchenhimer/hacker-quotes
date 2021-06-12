@@ -51,4 +51,5 @@ func main() {
 		}
 		fmt.Println(">>", sentence, "<<")
 	}
+	fmt.Println("")
 }
