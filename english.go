@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/zorchenhimer/hacker-quotes/database"
 	"github.com/zorchenhimer/hacker-quotes/models"
@@ -26,6 +27,7 @@ type english struct {
 }
 
 func NewEnglish(db database.DB) (HackerQuotes, error) {
+	rand.Seed(time.Now().UnixNano())
 	return &english{db: db}, nil
 }
 
