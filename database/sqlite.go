@@ -19,7 +19,6 @@ type sqliteDb struct {
 }
 
 func sqliteInit(connectionString string) (DB, error) {
-	fmt.Println("[sqlite] DB file:", connectionString)
 
 	newDb := false
 	if !fileExists(connectionString) {
@@ -47,7 +46,6 @@ func sqliteInit(connectionString string) (DB, error) {
 		}
 	}
 
-	fmt.Println("[sqlite] no errors")
 	return &sqliteDb{db: db, isNew: newDb}, nil
 }
 
@@ -270,8 +268,6 @@ func (s *sqliteDb) InitData(adjectives []models.Adjective, nouns []models.Noun, 
 	}
 
 	astmt_txt := "insert into adjectives (Absolute, AppendMore, AppendEst, Word) values (?, ?, ?, ?)"
-	fmt.Println(astmt_txt)
-
 	astmt, err := tx.Prepare(astmt_txt)
 	if err != nil {
 		tx.Rollback()
@@ -288,8 +284,6 @@ func (s *sqliteDb) InitData(adjectives []models.Adjective, nouns []models.Noun, 
 	astmt.Close()
 
 	nstmt_txt := "insert into nouns (Multiple, Begin, End, Alone, Regular, Word) values (?, ?, ?, ?, ?, ?)"
-	fmt.Println(nstmt_txt)
-
 	nstmt, err := tx.Prepare(nstmt_txt)
 	if err != nil {
 		tx.Rollback()
@@ -305,8 +299,6 @@ func (s *sqliteDb) InitData(adjectives []models.Adjective, nouns []models.Noun, 
 	nstmt.Close()
 
 	vstmt_txt := "insert into verbs (Regular, Word) values (?, ?)"
-	fmt.Println(vstmt_txt)
-
 	vstmt, err := tx.Prepare(vstmt_txt)
 	if err != nil {
 		tx.Rollback()
@@ -326,9 +318,8 @@ func (s *sqliteDb) InitData(adjectives []models.Adjective, nouns []models.Noun, 
 		tx.Rollback()
 		return fmt.Errorf("[init] no pronouns to insert")
 	}
-	pstmt_txt := "insert into pronouns (Plural, Word) values (?, ?)"
-	fmt.Println(pstmt_txt)
 
+	pstmt_txt := "insert into pronouns (Plural, Word) values (?, ?)"
 	pstmt, err := tx.Prepare(pstmt_txt)
 	if err != nil {
 		tx.Rollback()
@@ -345,8 +336,6 @@ func (s *sqliteDb) InitData(adjectives []models.Adjective, nouns []models.Noun, 
 	pstmt.Close()
 
 	sstmt_text := "insert into sentences (Sentence) values (?)"
-	fmt.Println(sstmt_text)
-
 	sstmt, err := tx.Prepare(sstmt_text)
 	if err != nil {
 		tx.Rollback()
