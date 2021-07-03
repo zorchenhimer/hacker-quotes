@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/zorchenhimer/hacker-quotes"
+	"github.com/zorchenhimer/hacker-quotes/api"
 	"github.com/zorchenhimer/hacker-quotes/database"
 	"github.com/zorchenhimer/hacker-quotes/frontend"
 )
@@ -62,8 +63,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	a, err := api.New(hack)
+	if err != nil {
+		fmt.Printf("Unable to load api: %s\n", err)
+		os.Exit(1)
+	}
+
 	mux := http.NewServeMux()
-	//mux.Handle("/api", api)
+	mux.Handle("/api", a)
 	mux.Handle("/", web)
 
 	hs := &http.Server{

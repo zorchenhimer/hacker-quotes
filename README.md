@@ -23,7 +23,7 @@ string.
 # TODO
 
 - Make the webpage look less terrible.
-- Write an API for the server.
+- Write some documentation for the API.
 - Write a twitter bot that uses the above API.
 
 # License
