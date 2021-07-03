@@ -14,10 +14,10 @@ import (
 
 type InitialData struct {
 	Adjectives [][]string
-	Nouns [][]string
-	Verbs [][]string
-	Pronouns [][]string
-	Sentences []string
+	Nouns      [][]string
+	Verbs      [][]string
+	Pronouns   [][]string
+	Sentences  []string
 }
 
 type english struct {
@@ -125,11 +125,11 @@ func (g *english) consumeRng(fmtString string, idx int, output *strings.Builder)
 		output.WriteString(choices[ridx])
 
 	case "hide":
-		if rand.Int() % 2 == 0 {
-			return end+1, nil
+		if rand.Int()%2 == 0 {
+			return end + 1, nil
 		}
 
-		var newEnd int = def+1
+		var newEnd int = def + 1
 		var err error
 		for newEnd < end {
 			if fmtString[newEnd] == '{' {
@@ -146,7 +146,7 @@ func (g *english) consumeRng(fmtString string, idx int, output *strings.Builder)
 		return 0, fmt.Errorf("RNG type %q is not implemented", fmtString[idx:def])
 	}
 
-	return end+1, nil
+	return end + 1, nil
 }
 
 func (g *english) consumeRaw(fmtString string, idx int, output *strings.Builder) (int, error) {
@@ -156,70 +156,70 @@ func (g *english) consumeRaw(fmtString string, idx int, output *strings.Builder)
 		return len(fmtString), nil
 	}
 
-	output.WriteString(fmtString[idx:end+idx])
-	return idx+end, nil
+	output.WriteString(fmtString[idx : end+idx])
+	return idx + end, nil
 }
 
 func (g *english) parseVerbOptions(optlist []string) (models.ConjugationType, models.ConjugationTime, bool) {
-		var ct models.ConjugationType = models.ConjugationType(rand.Intn(5) + 1)
-		if sliceContains(optlist, "i") {
-			ct = models.CT_I
-		} else if sliceContains(optlist, "you") {
-			ct = models.CT_You
-		} else if sliceContains(optlist, "it") {
+	var ct models.ConjugationType = models.ConjugationType(rand.Intn(5) + 1)
+	if sliceContains(optlist, "i") {
+		ct = models.CT_I
+	} else if sliceContains(optlist, "you") {
+		ct = models.CT_You
+	} else if sliceContains(optlist, "it") {
+		ct = models.CT_It
+	} else if sliceContains(optlist, "we") {
+		ct = models.CT_We
+	} else if sliceContains(optlist, "they") {
+		ct = models.CT_They
+	}
+
+	var cm models.ConjugationTime = models.ConjugationTime(rand.Intn(3) + 1)
+	if sliceContains(optlist, "present") {
+		cm = models.CM_Present
+	} else if sliceContains(optlist, "past") {
+		cm = models.CM_Past
+	} else if sliceContains(optlist, "future") {
+		cm = models.CM_Future
+	}
+
+	var invert bool = rand.Int()%2 == 0
+	if sliceContains(optlist, "invert") {
+		invert = true
+	}
+
+	//var regular bool = true
+	//if sliceContains(optlist, "irregular") {
+	//	regular = false
+	//}
+
+	if sliceContains(optlist, "from_pronoun") {
+		switch g.currentPronoun {
+		case "he", "she", "it":
 			ct = models.CT_It
-		} else if sliceContains(optlist, "we") {
+		case "i":
+			ct = models.CT_I
+		case "you":
+			ct = models.CT_You
+		case "we":
 			ct = models.CT_We
-		} else if sliceContains(optlist, "they") {
+		case "they":
 			ct = models.CT_They
 		}
+	}
 
-		var cm models.ConjugationTime = models.ConjugationTime(rand.Intn(3) + 1)
-		if sliceContains(optlist, "present") {
-			cm = models.CM_Present
-		} else if sliceContains(optlist, "past") {
-			cm = models.CM_Past
-		} else if sliceContains(optlist, "future") {
-			cm = models.CM_Future
-		}
-
-		var invert bool = rand.Int() % 2 == 0
-		if sliceContains(optlist, "invert") {
-			invert = true
-		}
-
-		//var regular bool = true
-		//if sliceContains(optlist, "irregular") {
-		//	regular = false
-		//}
-
-		if sliceContains(optlist, "from_pronoun") {
-			switch g.currentPronoun {
-			case "he", "she", "it":
-				ct = models.CT_It
-			case "i":
-				ct = models.CT_I
-			case "you":
-				ct = models.CT_You
-			case "we":
-				ct = models.CT_We
-			case "they":
-				ct = models.CT_They
-			}
-		}
-
-		return ct, cm, invert
+	return ct, cm, invert
 }
 
 func (g *english) parseNounOptions(optlist []string) (bool, bool) {
-	var plural bool = rand.Int() % 2 == 0
+	var plural bool = rand.Int()%2 == 0
 	if sliceContains(optlist, "plural") {
 		plural = true
 	} else if sliceContains(optlist, "singular") {
 		plural = false
 	}
 
-	var compound bool = rand.Int() % 2 == 0
+	var compound bool = rand.Int()%2 == 0
 	if sliceContains(optlist, "compound") {
 		compound = true
 	} else if sliceContains(optlist, "simple") {
@@ -253,11 +253,11 @@ func (g *english) consumeNewWord(fmtString string, idx int, output *strings.Buil
 	opts := strings.Index(fmtString[def+1:], ":")
 
 	if opts > -1 {
-		opts += def+2
+		opts += def + 2
 		options = fmtString[opts:end]
-		word = fmtString[def+1:opts-1]
+		word = fmtString[def+1 : opts-1]
 	} else {
-		word = fmtString[def+1:end]
+		word = fmtString[def+1 : end]
 	}
 
 	//fmt.Printf("idx:%d def:%d opts:%d end:%d type:%q word:%q opts:%q\n",
@@ -274,7 +274,7 @@ func (g *english) consumeNewWord(fmtString string, idx int, output *strings.Buil
 
 		v := models.Verb{
 			Regular: true,
-			Word: word,
+			Word:    word,
 		}
 
 		formatted = v.Conjugate(ct, cm, invert)
@@ -285,7 +285,7 @@ func (g *english) consumeNewWord(fmtString string, idx int, output *strings.Buil
 		if plural {
 			n := models.Noun{
 				Regular: true,
-				Word: word,
+				Word:    word,
 			}
 			formatted = n.Plural()
 		} else {
@@ -298,7 +298,7 @@ func (g *english) consumeNewWord(fmtString string, idx int, output *strings.Buil
 	}
 
 	output.WriteString(formatted)
-	return end+2, nil
+	return end + 2, nil
 }
 
 func (g *english) consumeWord(fmtString string, idx int, output *strings.Builder) (int, error) {
@@ -319,8 +319,8 @@ func (g *english) consumeWord(fmtString string, idx int, output *strings.Builder
 	optsStart := strings.Index(fmtString[idx:end], ":")
 
 	if optsStart != -1 {
-		options = fmtString[optsStart+idx+1:end]
-		wordtype = fmtString[idx:optsStart+idx]
+		options = fmtString[optsStart+idx+1 : end]
+		wordtype = fmtString[idx : optsStart+idx]
 	} else {
 		wordtype = fmtString[idx:end]
 	}
@@ -335,7 +335,7 @@ func (g *english) consumeWord(fmtString string, idx int, output *strings.Builder
 
 	switch wordtype {
 	case "pronoun":
-		var plural bool = rand.Int() % 2 == 0
+		var plural bool = rand.Int()%2 == 0
 		if sliceContains(opts, "plural") {
 			plural = true
 		} else if sliceContains(opts, "singular") {
@@ -365,10 +365,10 @@ func (g *english) consumeWord(fmtString string, idx int, output *strings.Builder
 		}
 
 	case "noun_phrase":
-		var definite bool = rand.Int() % 2 == 0
-		var hasAdj bool = rand.Int() % 2 == 0
-		var plural bool = rand.Int() % 2 == 0
-		var compound bool = rand.Int() % 2 == 0
+		var definite bool = rand.Int()%2 == 0
+		var hasAdj bool = rand.Int()%2 == 0
+		var plural bool = rand.Int()%2 == 0
+		var compound bool = rand.Int()%2 == 0
 
 		if sliceContains(opts, "indefinite") {
 			definite = false
@@ -410,10 +410,10 @@ func (g *english) consumeWord(fmtString string, idx int, output *strings.Builder
 	}
 
 	output.WriteString(word)
-	return end+1, nil
+	return end + 1, nil
 }
 
-func (g *english) nounPhrase(definite, hasAdj, plural, compound bool) (string, error){
+func (g *english) nounPhrase(definite, hasAdj, plural, compound bool) (string, error) {
 	adj := ""
 	var err error
 	if hasAdj {
@@ -434,7 +434,7 @@ func (g *english) nounPhrase(definite, hasAdj, plural, compound bool) (string, e
 	} else {
 		phrase = noun
 	}
-	
+
 	if definite && !plural {
 		//fmt.Println("[nounPhrase] definite && !plural")
 		return "the " + phrase, nil
@@ -678,7 +678,7 @@ func (g *english) ana(phrase string) string {
 
 // toCap capitalizes the first word of each sentence in the input string.
 func toCap(words string) string {
-	ret :=  strings.ToUpper(string(words[0])) + words[1:]
+	ret := strings.ToUpper(string(words[0])) + words[1:]
 
 	next := strings.Index(words, ". ")
 	if next == -1 {
@@ -692,7 +692,7 @@ func toCap(words string) string {
 		if newnext == -1 {
 			break
 		}
-		next = newnext + next+1
+		next = newnext + next + 1
 	}
 
 	return ret
