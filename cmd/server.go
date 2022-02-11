@@ -74,7 +74,7 @@ func main() {
 	mux.Handle("/", web)
 
 	hs := &http.Server{
-		Addr: ":8080",
+		Addr: s.HttpAddr,
 		Handler: mux,
 	}
 
