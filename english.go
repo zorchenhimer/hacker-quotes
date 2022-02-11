@@ -21,8 +21,9 @@ type InitialData struct {
 }
 
 type english struct {
-	db database.DB
+	Debug bool
 
+	db database.DB
 	currentPronoun string
 }
 
@@ -563,7 +564,9 @@ func (g *english) randomSentence() (string, error) {
 }
 
 func (g *english) InitData(filename string) error {
-	fmt.Printf("Initializing database with data in %q\n", filename)
+	if g.Debug {
+		fmt.Printf("Initializing database with data in %q\n", filename)
+	}
 	if g.db == nil {
 		return fmt.Errorf("databse is nil!")
 	}
