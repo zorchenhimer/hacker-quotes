@@ -2,12 +2,12 @@
 SOURCES=$(shell find . -not -path "./cmd/*" -type f -name "*.go")
 HTML=$(shell find frontend/ -type f -name "*.html")
 
-all: bin/server bin/generate
+all: bin/HackerServer bin/HackerQuote
 
-bin/server: cmd/server.go $(SOURCES) $(HTML)
+bin/HackerServer: cmd/server.go $(SOURCES) $(HTML)
 	go build -o $@ $<
 
-bin/generate: cmd/generate.go $(SOURCES)
+bin/HackerQuote: cmd/generate.go $(SOURCES)
 	go build -o $@ $<
 
 clean:
