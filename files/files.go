@@ -10,6 +10,9 @@ import (
 	"fmt"
 )
 
+//go:embed word_lists.json
+var WordLists []byte
+
 // fileExists returns whether the given file or directory exists or not.
 // Taken from https://stackoverflow.com/a/10510783
 func fileExists(path string) bool {

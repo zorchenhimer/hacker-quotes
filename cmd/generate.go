@@ -7,6 +7,7 @@ import (
 
 	"github.com/zorchenhimer/hacker-quotes"
 	"github.com/zorchenhimer/hacker-quotes/database"
+	"github.com/zorchenhimer/hacker-quotes/files"
 )
 
 func main() {
@@ -24,6 +25,12 @@ func main() {
 	}
 
 	hq, err := hacker.NewEnglish(db)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	err = files.UnpackFileBytes(files.WordLists, "word_lists.json")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

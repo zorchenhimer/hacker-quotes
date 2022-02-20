@@ -48,6 +48,12 @@ func main() {
 
 	if db.IsNew() {
 		fmt.Println("database is new")
+		err = files.UnpackFileBytes(files.WordLists, "word_lists.json")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
 		err = hack.InitData("word_lists.json")
 		if err != nil {
 			fmt.Println(err)
