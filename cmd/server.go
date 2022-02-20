@@ -12,6 +12,7 @@ import (
 	"github.com/zorchenhimer/hacker-quotes/api"
 	"github.com/zorchenhimer/hacker-quotes/database"
 	"github.com/zorchenhimer/hacker-quotes/frontend"
+	"github.com/zorchenhimer/hacker-quotes/files"
 )
 
 //go:embed settings_default.json
@@ -21,14 +22,13 @@ func main() {
 	var s *settings
 	var err error
 
-	if fileExists("settings.json") {
-		fmt.Println("settings.json found")
-		s, err = loadSettings("settings.json")
-	} else {
-		fmt.Println("settings.json not found.  Using default values.")
-		s, err = loadRawSettings(defaultSettings)
+	err = files.UnpackFileBytes(defaultSettings, "settings.json")
+	if err != nil {
+		fmt.Printf("Unable to unpack default settings: %s\n", err)
+		os.Exit(1)
 	}
 
+	s, err = loadSettings("settings.json")
 	if err != nil {
 		fmt.Printf("Unable to load settings: %s\n", err)
 		os.Exit(1)
