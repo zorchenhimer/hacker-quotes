@@ -29,6 +29,8 @@ func (a *Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+
 	var err error
 	resp := &Response{Quotes:[]string{}}
 	f := r.URL.Query().Get("format")
