@@ -1,3 +1,4 @@
 bin/
+static/
 *.sqlite
 *.txt

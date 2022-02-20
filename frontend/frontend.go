@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"html/template"
+	"os"
+	"io"
 
 	//"github.com/gorilla/sessions"
 
@@ -27,6 +29,10 @@ func New(hq hacker.HackerQuotes) (*Frontend, error) {
 	f := &Frontend{
 		hq: hq,
 		//cookies: sessions.NewCookieStore([]byte("some auth key"), []byte("some encrypt key")),
+	}
+
+	if err := f.unpackTemplates(); err != nil {
+		return nil, err
 	}
 
 	if err := f.registerTemplates(); err != nil {
@@ -62,7 +68,11 @@ func (f *Frontend) registerTemplates() error {
 	f.templates = make(map[string]*template.Template)
 
 	for key, files := range templateDefs {
-		t, err := template.ParseFS(templateFiles, append([]string{"base.html"}, files...)...)
+		fixedFiles := []string{}
+		for _, f := range files {
+			fixedFiles = append(fixedFiles, StaticDir + f)
+		}
+		t, err := template.ParseFiles(append([]string{StaticDir+"base.html"}, fixedFiles...)...)
 		if err != nil {
 			return fmt.Errorf("Error parsing template %s: %v", files, err)
 		}
@@ -81,4 +91,61 @@ func (f *Frontend) renderTemplate(w http.ResponseWriter, name string, data inter
 	}
 
 	return t.Execute(w, data)
+}
+
+const StaticDir string = `static/`
+
+// Unpack template files that don't exist on disk.
+func (f *Frontend) unpackTemplates() error {
+	err := os.MkdirAll(StaticDir, 0755)
+	if err != nil {
+		return err
+	}
+
+	entries, err := templateFiles.ReadDir(".")
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		if fileExists(StaticDir + entry.Name()) {
+			continue
+		}
+
+		fmt.Printf("Template %s is missing, unpacking default.\n", entry.Name())
+		out, err := os.Create(StaticDir + entry.Name())
+		if err != nil {
+			return err
+		}
+
+		in, err := templateFiles.Open(entry.Name())
+		if err != nil {
+			out.Close()
+			return err
+		}
+
+		_, err = io.Copy(out, in)
+		if err != nil {
+			out.Close()
+			in.Close()
+			return err
+		}
+
+		out.Close()
+		in.Close()
+	}
+	return nil
+}
+
+// fileExists returns whether the given file or directory exists or not.
+// Taken from https://stackoverflow.com/a/10510783
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
