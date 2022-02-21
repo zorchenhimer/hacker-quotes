@@ -1,4 +1,5 @@
 bin/
 static/
+settings.json
 *.sqlite
 *.txt
