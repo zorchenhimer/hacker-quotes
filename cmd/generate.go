@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
@@ -30,13 +31,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = files.UnpackFileBytes(files.WordLists, "word_lists.json")
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	err = hq.InitData("word_lists.json")
+	reader := bytes.NewReader(files.WordLists)
+	err = hq.InitData(reader)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

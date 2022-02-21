@@ -18,6 +18,8 @@ import (
 //go:embed settings_default.json
 var defaultSettings []byte
 
+const wordListsFilename string = `word_lists.json`
+
 func main() {
 	var s *settings
 	var err error
@@ -48,17 +50,25 @@ func main() {
 
 	if db.IsNew() {
 		fmt.Println("database is new")
-		err = files.UnpackFileBytes(files.WordLists, "word_lists.json")
+		err = files.UnpackFileBytes(files.WordLists, wordListsFilename)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		err = hack.InitData("word_lists.json")
+		file, err := os.Open(wordListsFilename)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+
+		err = hack.InitData(file)
+		if err != nil {
+			fmt.Println(err)
+			file.Close()
+			os.Exit(1)
+		}
+		file.Close()
 	} else {
 		fmt.Println("database isn't new")
 	}

@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+	"io"
 
 	"github.com/zorchenhimer/hacker-quotes/database"
 	"github.com/zorchenhimer/hacker-quotes/models"
@@ -563,15 +564,12 @@ func (g *english) randomSentence() (string, error) {
 	return sentence, nil
 }
 
-func (g *english) InitData(filename string) error {
-	if g.Debug {
-		fmt.Printf("Initializing database with data in %q\n", filename)
-	}
+func (g *english) InitData(file io.Reader) error {
 	if g.db == nil {
 		return fmt.Errorf("databse is nil!")
 	}
 
-	raw, err := ioutil.ReadFile(filename)
+	raw, err := ioutil.ReadAll(file)
 	if err != nil {
 		return err
 	}

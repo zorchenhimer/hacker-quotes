@@ -1,8 +1,9 @@
 package hacker
 
 import (
+	"io"
+
 	"github.com/zorchenhimer/hacker-quotes/models"
-	//"github.com/zorchenhimer/hacker-quotes/database"
 )
 
 type HackerQuotes interface {
@@ -13,7 +14,7 @@ type HackerQuotes interface {
 	HackThis(format string) (string, error)
 
 	// InitData populates the underlying database with data from the given json file.
-	InitData(filename string) error
+	InitData(reader io.Reader) error
 }
 
 type Admin interface {
