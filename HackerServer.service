@@ -1,0 +1,13 @@
+[Unit]
+Description=Hacker Quote Generator
+After=network.target
+
+[Service]
+ExecStart=/opt/HackerQuotes/HackerServer
+WorkingDirectory=/opt/HackerQuotes/
+Restart=on-failure
+Type=simple
+User=nick
+
+[Install]
+WantedBy=multi-user.target
