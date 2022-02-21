@@ -6,10 +6,10 @@ HTML=$(shell find frontend/ -type f -name "*.html")
 all: bin/HackerServer bin/HackerQuote
 
 bin/HackerServer: cmd/server.go $(SOURCES) $(HTML)
-	go build -o $@ $<
+	go$(GO_VERSION) build -o $@ $<
 
 bin/HackerQuote: cmd/generate.go $(SOURCES)
-	go build -o $@ $<
+	go$(GO_VERSION) build -o $@ $<
 
 clean:
 	rm -rf bin/
