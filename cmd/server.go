@@ -94,6 +94,8 @@ func main() {
 		Handler: mux,
 	}
 
+	fmt.Println("Listening on", s.HttpAddr)
+
 	if err := hs.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		fmt.Println("Error running HTTP server:", err)
 	}

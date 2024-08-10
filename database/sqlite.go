@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/mattn/go-sqlite3"
+	//_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 
 	"github.com/zorchenhimer/hacker-quotes/models"
 )
@@ -25,7 +26,7 @@ func sqliteInit(connectionString string) (DB, error) {
 		newDb = true
 	}
 
-	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s", connectionString))
+	db, err := sql.Open("sqlite", fmt.Sprintf("file:%s", connectionString))
 	if err != nil {
 		fmt.Println("[sqlite] Open error:", err)
 		return nil, err
